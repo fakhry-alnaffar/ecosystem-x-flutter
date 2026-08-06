@@ -1,0 +1,36 @@
+name: example
+description: "ecosystem_x_flutter — example application."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.0
+  flutter: ">=3.44.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # The one dependency this whole example needs — it replaces what used to be
+  # three separate git dependencies (x_flutter_bloc, x_flutter_core,
+  # x_flutter_core_models).
+  ecosystem_x_flutter:
+    path: ../
+
+  cupertino_icons: ^1.0.9
+  dio: ^5.11.0
+  equatable: ^2.1.0
+  flutter_bloc: ^9.1.1
+  flutter_screenutil: ^5.9.3
+  get_it: ^9.2.1
+  loader_overlay: ^5.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true

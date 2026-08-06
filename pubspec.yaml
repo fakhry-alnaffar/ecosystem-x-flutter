@@ -1,0 +1,68 @@
+name: ecosystem_x_flutter
+description: >-
+  The X Flutter ecosystem in a single package — pure domain models, a Dio-based
+  networking and storage layer, and a production-ready BLoC framework, behind
+  one import.
+version: 2.0.0
+repository: https://github.com/fakhry-alnaffar/ecosystem-x-flutter
+homepage: https://github.com/fakhry-alnaffar/ecosystem-x-flutter
+issue_tracker: https://github.com/fakhry-alnaffar/ecosystem-x-flutter/issues
+
+topics:
+  - architecture
+  - bloc
+  - state-management
+  - networking
+  - dio
+
+environment:
+  sdk: ^3.12.0
+  flutter: ">=3.44.0"
+
+# Every constraint below is the latest published major of what the three
+# pre-merge packages required, so a consumer that resolved against
+# x_flutter_core_models + x_flutter_core + x_flutter_bloc still resolves here.
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # models layer — no third-party dependencies (pure Dart contracts).
+
+  # core layer — networking, connectivity, storage
+  connectivity_plus: ^7.3.1
+  dio: ^5.11.0
+  dio_cache_interceptor: ^4.0.7
+  internet_connection_checker_plus: ^3.1.1
+  pretty_dio_logger: ^1.4.0
+  retry: ^3.1.2
+  shared_preferences: ^2.5.5
+  # Deliberately spans two majors instead of pinning the newest. v11 keeps the
+  # read / write / delete / deleteAll / containsKey surface and the
+  # AndroidOptions and IOSOptions constructors SecuredPreferencesStorage uses,
+  # so both work — and v11 drags in win32 ^6.0.1, which still conflicts with
+  # package_info_plus ^9.x. Pinning ^11.0.0 here would force that fight onto
+  # every consuming app; leaving the range open lets the app decide.
+  flutter_secure_storage: ">=10.3.1 <12.0.0"
+
+  # bloc layer — state management and UI plumbing
+  equatable: ^2.1.0
+  flutter_bloc: ^9.1.1
+  flutter_screenutil: ^5.9.3
+  loader_overlay: ^5.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # build_runner 2.16.0 and mockito 5.8.1 exist but need `meta ^1.18.3`, and
+  # flutter_test from the Flutter SDK pins `meta 1.18.0`. These are the newest
+  # versions that resolve against the SDK; raise them when Flutter ships a
+  # newer meta.
+  build_runner: ^2.15.1
+  connectivity_plus_platform_interface: ^2.1.0
+  flutter_lints: ^6.0.0
+  mockito: ^5.7.0
+  # No `test` dependency: the merged package needs `flutter_test` for the bloc
+  # layer's widget tests, and `test` pins a `test_api` the Flutter SDK's
+  # `flutter_test` cannot resolve against. `flutter_test` provides the same
+  # test/group/expect API the pre-merge core tests used.

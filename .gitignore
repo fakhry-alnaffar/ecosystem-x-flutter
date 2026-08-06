@@ -1,0 +1,40 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Visual Studio Code related
+.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+build/
+coverage/
+pubspec.lock
+
+# The example app is a leaf project; its lock file is not part of the library.
+example/pubspec.lock
+example/ios/Podfile.lock
+example/macos/Podfile.lock
+
+# Pre-merge clones of the three source repositories, kept locally as a
+# provenance trail only. Their history lives in their own GitHub repos.
+/.legacy/

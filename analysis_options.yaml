@@ -1,0 +1,17 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    # Pre-merge clones of x-flutter-bloc / x-flutter-core / x-flutter-core-models,
+    # kept only as a provenance trail. They carry their own pubspecs and must
+    # never be analysed as part of this package.
+    - .legacy/**
+    - example/**
+
+  errors:
+    # A missing export in a barrel silently shrinks the public API, which is
+    # exactly the breakage this package must never ship.
+    unused_import: error
+
+# Additional information about this file can be found at
+# https://dart.dev/guides/language/analysis-options

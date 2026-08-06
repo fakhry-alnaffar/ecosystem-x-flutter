@@ -1,0 +1,30 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'package:ecosystem_x_flutter/src/bloc/bloc_typedefs.dart';
+import 'package:ecosystem_x_flutter/x_flutter_core_models.dart';
+
+/// Mixin to add failure reporting capabilities to a BLoC or Cubit.
+mixin class FailureStreamMixin implements FailureStreamProvider {
+  final StreamController<Failure> _errorStreamController =
+      StreamController<Failure>.broadcast(sync: true);
+
+  /// Stream of failures.
+  @override
+  Stream<Failure> get failureStream => _errorStreamController.stream;
+
+  /// Emits a failure to [failureStream].
+  void emitFailure(Failure failure) {
+    if (!_errorStreamController.isClosed) {
+      _errorStreamController.add(failure);
+    }
+  }
+
+  /// Closes the failure stream controller.
+  @protected
+  void closeFailureStream() {
+    if (!_errorStreamController.isClosed) {
+      _errorStreamController.close();
+    }
+  }
+}
