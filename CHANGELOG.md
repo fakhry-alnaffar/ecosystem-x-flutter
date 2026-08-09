@@ -28,10 +28,13 @@ and `x_flutter_bloc` — all three at 2.0.0 — become one dependency,
   Flutter SDK: `connectivity_plus ^7.3.1`, `dio ^5.11.0`,
   `dio_cache_interceptor ^4.0.7`, `equatable ^2.1.0`,
   `internet_connection_checker_plus ^3.1.1`.
-- `flutter_secure_storage` widened to `>=10.3.1 <12.0.0`. It deliberately spans
-  two majors rather than pinning v11: v11 pulls `win32 ^6.0.1`, which still
-  conflicts with `package_info_plus ^9.x` and `device_info_plus ^12.x`. Pinning
-  would force that conflict onto every consuming app.
+- `flutter_secure_storage` stays capped at `^10.3.1`, matching the pre-merge
+  bound. The code works on v11 too — it was analyzed and tested against both —
+  but v11 removes the Android ciphers deprecated in v10 and its changelog states
+  that data written with them becomes unusable, so an app that jumps straight to
+  v11 can leave users with unreadable stored sessions. v11 also raises minSdk to
+  24 and compileSdk to 37. Moving up is an app-level decision that needs the
+  migration path verified; a library should not make it silently.
 - The models layer now depends on Flutter transitively, because it ships inside
   a Flutter package. It is still free of Flutter *imports*, but it can no longer
   be consumed from a pure-Dart target on its own.
@@ -47,7 +50,25 @@ and `x_flutter_bloc` — all three at 2.0.0 — become one dependency,
 
 ---
 
-The history before this release lives in the three source repositories:
-[x-flutter-core-models](https://github.com/fakhry-alnaffar/x-flutter-core-models),
-[x-flutter-core](https://github.com/fakhry-alnaffar/x-flutter-core),
-[x-flutter-bloc](https://github.com/fakhry-alnaffar/x-flutter-bloc).
+### Provenance — reproducing the merge
+
+The history before this release lives in the three source repositories, and the
+merge was taken from these exact commits:
+
+| Package                 | Repository                                                              | Commit    |
+|-------------------------|-------------------------------------------------------------------------|-----------|
+| `x_flutter_core_models` | [x-flutter-core-models](https://github.com/fakhry-alnaffar/x-flutter-core-models) | `363a48d` |
+| `x_flutter_core`        | [x-flutter-core](https://github.com/fakhry-alnaffar/x-flutter-core)               | `68ef3fc` |
+| `x_flutter_bloc`        | [x-flutter-bloc](https://github.com/fakhry-alnaffar/x-flutter-bloc)               | `7925af9` |
+
+All three repositories are public and untouched, so the "0 differences" claim
+above is verifiable by anyone, not just on the machine the merge was done on.
+Clone them at those commits and compare, remembering that the layer directory
+prefix and each file's own import URIs are the intended difference:
+
+```
+x-flutter-core-models/lib/src/**  ->  lib/src/core_models/**
+x-flutter-core/lib/src/**         ->  lib/src/core/**
+x-flutter-bloc/lib/src/bloc/**    ->  lib/src/bloc/**
+x-flutter-bloc/lib/src/ui/**      ->  lib/src/bloc/ui/**
+```

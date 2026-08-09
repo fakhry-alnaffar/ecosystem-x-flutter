@@ -6,11 +6,17 @@ analyzer:
     # kept only as a provenance trail. They carry their own pubspecs and must
     # never be analysed as part of this package.
     - .legacy/**
+    # The example is a separate package with its own pubspec and its own
+    # analysis_options. Analyse it on its own (`cd example && flutter analyze`),
+    # not as part of this one — it is also the only in-repo consumer of the
+    # barrels, so do not skip it.
     - example/**
 
   errors:
-    # A missing export in a barrel silently shrinks the public API, which is
-    # exactly the breakage this package must never ship.
+    # Dead imports are noise in a package whose whole job is re-exporting.
+    # NOTE: this does NOT guard the public API — the analyzer cannot see that a
+    # barrel stopped exporting something. That job belongs to
+    # test/api_surface_test.dart, which fails to compile if an export is lost.
     unused_import: error
 
 # Additional information about this file can be found at

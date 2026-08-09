@@ -19,9 +19,15 @@ environment:
   sdk: ^3.12.0
   flutter: ">=3.44.0"
 
-# Every constraint below is the latest published major of what the three
-# pre-merge packages required, so a consumer that resolved against
-# x_flutter_core_models + x_flutter_core + x_flutter_bloc still resolves here.
+# Constraints are the newest versions that resolve against the Flutter SDK, at
+# the same MAJOR each of the three pre-merge packages required — so no consumer
+# has to take a breaking upgrade to move to this package.
+#
+# Some lower bounds are raised within that major (dio ^5.9.2 -> ^5.11.0,
+# connectivity_plus ^7.1.1 -> ^7.3.1, dio_cache_interceptor ^4.0.6 -> ^4.0.7,
+# internet_connection_checker_plus ^3.0.1 -> ^3.1.1). An app pinned to an older
+# patch inside those majors will be asked to move up; none of them is a
+# breaking change.
 dependencies:
   flutter:
     sdk: flutter
@@ -36,18 +42,25 @@ dependencies:
   pretty_dio_logger: ^1.4.0
   retry: ^3.1.2
   shared_preferences: ^2.5.5
-  # Deliberately spans two majors instead of pinning the newest. v11 keeps the
-  # read / write / delete / deleteAll / containsKey surface and the
-  # AndroidOptions and IOSOptions constructors SecuredPreferencesStorage uses,
-  # so both work — and v11 drags in win32 ^6.0.1, which still conflicts with
-  # package_info_plus ^9.x. Pinning ^11.0.0 here would force that fight onto
-  # every consuming app; leaving the range open lets the app decide.
-  flutter_secure_storage: ">=10.3.1 <12.0.0"
+  # Capped below v11 ON PURPOSE — this is a data-safety bound, not an API one.
+  # The code here works fine on both majors (analyzed and tested against each),
+  # but v11 removes the Android ciphers deprecated in v10 and its own changelog
+  # says data written with them "will be unusable after this upgrade": an app
+  # that skips straight to v11 can leave users with unreadable stored sessions.
+  # v11 also raises minSdk to 24 and compileSdk to 37.
+  #
+  # So moving to v11 has to be a deliberate app-level decision — verify the
+  # migration path and the Android build config first, then raise this bound.
+  # A library must not make that call silently on a consumer's behalf, which is
+  # exactly what the pre-merge `^10.3.1` bound was protecting.
+  flutter_secure_storage: ^10.3.1
 
-  # bloc layer — state management and UI plumbing
-  equatable: ^2.1.0
+  # bloc layer — state management and UI plumbing.
+  # x_flutter_bloc also declared equatable and flutter_screenutil, but nothing
+  # under lib/ imports either; only its example app did. They are declared in
+  # example/pubspec.yaml instead, so this package does not push two unused
+  # packages onto every consumer.
   flutter_bloc: ^9.1.1
-  flutter_screenutil: ^5.9.3
   loader_overlay: ^5.0.0
 
 dev_dependencies:
