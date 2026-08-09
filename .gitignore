@@ -35,6 +35,7 @@ example/pubspec.lock
 example/ios/Podfile.lock
 example/macos/Podfile.lock
 
-# Pre-merge clones of the three source repositories, kept locally as a
-# provenance trail only. Their history lives in their own GitHub repos.
+# Scratch space for re-cloning the three pre-merge source repositories when
+# auditing the merge (CHANGELOG records the commits). Empty by default — their
+# history lives in their own GitHub repos, which is the canonical copy.
 /.legacy/

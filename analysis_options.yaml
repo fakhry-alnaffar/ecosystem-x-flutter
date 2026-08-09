@@ -2,9 +2,10 @@ include: package:flutter_lints/flutter.yaml
 
 analyzer:
   exclude:
-    # Pre-merge clones of x-flutter-bloc / x-flutter-core / x-flutter-core-models,
-    # kept only as a provenance trail. They carry their own pubspecs and must
-    # never be analysed as part of this package.
+    # Kept for anyone who re-clones x-flutter-bloc / x-flutter-core /
+    # x-flutter-core-models here to audit the merge (see CHANGELOG for the
+    # commits). Nothing is there by default. They carry their own pubspecs and
+    # must never be analysed as part of this package.
     - .legacy/**
     # The example is a separate package with its own pubspec and its own
     # analysis_options. Analyse it on its own (`cd example && flutter analyze`),
