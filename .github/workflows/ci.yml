@@ -1,0 +1,124 @@
+# CI for ecosystem_x_flutter.
+#
+# This exists because of how the package is consumed. The Tyrhal app depends on
+# it by git ref:
+#
+#   ecosystem_x_flutter:
+#     git:
+#       url: https://github.com/fakhry-alnaffar/ecosystem-x-flutter.git
+#       ref: main
+#
+# There is no version constraint and no pub.dev release in between. A commit
+# pushed to `main` is therefore picked up by the next `flutter pub get` in the
+# app — on a developer machine and on Codemagic. A broken commit here breaks the
+# app's build directly, so `main` needs to stay green on its own.
+#
+# Flutter is pinned to the version Codemagic builds the app with (see
+# `codemagic.yaml` in tyrhal-flutter). Testing on a different version would
+# prove the wrong thing.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# A newer push to the same branch makes an in-flight run irrelevant.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: 3.44.7
+
+jobs:
+  package:
+    name: Package — analyze and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        # --fatal-infos because this package is currently clean at info level;
+        # keeping it that way is cheaper than letting lints accumulate.
+        run: flutter analyze --fatal-infos
+
+      - name: Public API contract
+        # Run this on its own before the full suite so a break in it is
+        # unmistakable in the log. It references every public symbol the three
+        # pre-merge packages (x_flutter_core_models, x_flutter_core,
+        # x_flutter_bloc) exported, through the single merged import. If it stops
+        # compiling, an export was dropped and every consumer breaks the same
+        # way. That is a breaking change to fix, never a test to update.
+        run: flutter test test/api_surface_test.dart
+
+      - name: Test
+        run: flutter test
+
+  oldest-dependencies:
+    name: Oldest allowed dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Resolve the lowest version each constraint allows
+        # The `package` job proves the newest allowed versions work. This proves
+        # the other end: that the lower bounds in pubspec.yaml are honest, and
+        # that a consuming app pinned to an older patch inside the same major
+        # still gets working code. Without this, a lower bound can silently
+        # under-declare what the code actually needs.
+        run: flutter pub downgrade
+
+      - name: Analyze
+        run: flutter analyze --fatal-infos
+
+      - name: Test
+        run: flutter test
+
+  example:
+    name: Example app
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      # The example is a separate package and is excluded from the root
+      # analysis_options, so the job above never sees it. It matters more than a
+      # sample usually would: it is the only consumer of the barrels inside this
+      # repository, which makes it the one place a broken export surfaces here
+      # rather than in the app.
+      - name: Resolve dependencies
+        working-directory: example
+        run: flutter pub get
+
+      - name: Analyze
+        working-directory: example
+        run: flutter analyze
+
+      - name: Compile
+        # Analysis alone does not prove the example builds. `build bundle`
+        # compiles the Dart kernel without needing an Android or iOS toolchain.
+        working-directory: example
+        run: flutter build bundle --debug

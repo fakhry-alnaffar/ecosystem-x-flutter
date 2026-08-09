@@ -1,5 +1,7 @@
 # ecosystem_x_flutter
 
+[![CI](https://github.com/fakhry-alnaffar/ecosystem-x-flutter/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/fakhry-alnaffar/ecosystem-x-flutter/actions/workflows/ci.yml)
+
 The X Flutter ecosystem in one package. Domain contracts, a Dio-based
 networking and storage layer, and a production-ready BLoC framework — behind a
 single import.
@@ -142,6 +144,26 @@ Run the example app:
 ```bash
 cd example && flutter run
 ```
+
+### CI
+
+`.github/workflows/ci.yml` runs on every push to `main` and every pull request,
+on the same Flutter version Codemagic builds the consuming app with. Three jobs:
+
+| Job                        | What it protects                                                                 |
+|----------------------------|----------------------------------------------------------------------------------|
+| **Package**                | `flutter analyze --fatal-infos`, the public API contract test, then the full suite |
+| **Oldest dependencies**    | `flutter pub downgrade` then analyze + test — proves the lower bounds are honest   |
+| **Example app**            | analyzes and compiles the only in-repo consumer of the barrels                     |
+
+This matters more than CI usually would: the consuming app depends on this
+package by `ref: main` with no version constraint, so a commit on `main` reaches
+the next `flutter pub get` in that app directly. `main` has to stay green on its
+own — nothing downstream will catch a break first.
+
+Formatting is deliberately **not** gated. The merged sources are byte-for-byte
+identical to their pre-merge originals apart from import URIs, and running
+`dart format` over them would destroy that property for no functional gain.
 
 ### The API surface test
 
