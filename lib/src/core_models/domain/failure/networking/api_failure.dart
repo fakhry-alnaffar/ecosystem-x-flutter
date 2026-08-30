@@ -52,18 +52,21 @@ abstract class ApiFailure implements Failure {
 class ApiResponseFailure extends ApiFailure {
   /// Creates an [ApiResponseFailure] with the required HTTP [statusCode] and
   /// an optional [message].
+  /// `statusCode` stays an explicit `int` rather than becoming a super
+  /// parameter: the base declares it `int?`, so forwarding it would widen this
+  /// subtype's contract to accept null, and a response failure always has one.
   const ApiResponseFailure({
     required int statusCode,
-    String message = '',
-  }) : super(ServerFailure.response, statusCode: statusCode, message: message);
+    super.message,
+  }) : super(ServerFailure.response, statusCode: statusCode);
 }
 
 /// The server returned an unrecognised or unexpected error payload.
 class ApiUndefinedFailure extends ApiFailure {
   const ApiUndefinedFailure({
-    int? statusCode,
-    required String message,
-  }) : super(ServerFailure.undefined, message: message, statusCode: statusCode);
+    super.statusCode,
+    required super.message,
+  }) : super(ServerFailure.undefined);
 }
 
 /// The device has no network connectivity.
@@ -74,8 +77,8 @@ class ConnectionFailure extends ApiFailure {
 /// An unexpected exception was thrown while executing the request.
 class ApiExceptionFailure extends ApiFailure {
   /// Creates an [ApiExceptionFailure] with a [message] describing the exception.
-  const ApiExceptionFailure({required String message})
-      : super(ServerFailure.exception, message: message);
+  const ApiExceptionFailure({required super.message})
+      : super(ServerFailure.exception);
 }
 
 /// The server rejected the request due to missing or invalid credentials (401).
