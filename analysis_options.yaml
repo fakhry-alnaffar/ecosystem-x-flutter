@@ -12,6 +12,13 @@ analyzer:
     # not as part of this one — it is also the only in-repo consumer of the
     # barrels, so do not skip it.
     - example/**
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
 
   errors:
     # Dead imports are noise in a package whose whole job is re-exporting.

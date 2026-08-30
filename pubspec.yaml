@@ -43,16 +43,28 @@ dependencies:
   retry: ^3.1.2
   shared_preferences: ^2.5.5
   # Capped below v11 ON PURPOSE — this is a data-safety bound, not an API one.
-  # The code here works fine on both majors (analyzed and tested against each),
-  # but v11 removes the Android ciphers deprecated in v10 and its own changelog
-  # says data written with them "will be unusable after this upgrade": an app
-  # that skips straight to v11 can leave users with unreadable stored sessions.
-  # v11 also raises minSdk to 24 and compileSdk to 37.
+  # The code here works fine on both majors (analyzed and tested against each).
   #
-  # So moving to v11 has to be a deliberate app-level decision — verify the
-  # migration path and the Android build config first, then raise this bound.
-  # A library must not make that call silently on a consumer's behalf, which is
-  # exactly what the pre-merge `^10.3.1` bound was protecting.
+  # v11 removes the Android ciphers *deprecated in v10*. It does not remove
+  # data: v10 migrates existing data to the new ciphers on first access
+  # whenever `migrateOnAlgorithmChange` is true, which is its default. So the
+  # exposure is narrower than "anyone on v11 loses their session", and worth
+  # stating precisely, because the earlier wording here was alarming enough to
+  # be misread: the app that gets hurt is one whose user updates from a
+  # PRE-v10 build straight to a v11 build, never running the migration. v11
+  # also raises minSdk to 24 and compileSdk to 37.
+  #
+  # The bound stays regardless. A library cannot know a consumer's install base
+  # or its Android build config, and it must not make that call silently on
+  # anyone's behalf — which is exactly what the pre-merge `^10.3.1` bound was
+  # protecting. Raising it is an app-level decision, taken after checking how
+  # many pre-v10 installs are still out there.
+  #
+  # Consumers are not currently waiting on this bound in any case: as of
+  # 2026-08-30, flutter_secure_storage 11 needs flutter_secure_storage_windows
+  # ^4.2.2, which needs win32 ^6.0.1, and tyrhal's dependency graph pins win32
+  # to 5.x through stream_chat_flutter. Widening here would unblock nothing and
+  # only spend the guard rail.
   flutter_secure_storage: ^10.3.1
 
   # bloc layer — state management and UI plumbing.
@@ -67,10 +79,22 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  # build_runner 2.16.0 and mockito 5.8.1 exist but need `meta ^1.18.3`, and
-  # flutter_test from the Flutter SDK pins `meta 1.18.0`. These are the newest
-  # versions that resolve against the SDK; raise them when Flutter ships a
-  # newer meta.
+  # Held back by `meta`, and the reason is easy to disprove on the wrong
+  # machine -- so it is spelled out here. build_runner 2.16.0 and mockito 5.8.1
+  # both need `analyzer >=13.3.0`, analyzer >=13.2.0 needs `meta ^1.18.3`, and
+  # the Flutter SDK pins `meta`. Which pin you get depends on the SDK:
+  #
+  #   Flutter 3.44 (this package's declared floor)  meta 1.18.0  -> blocked
+  #   Flutter 3.47 (a current dev machine)          meta 1.19.0  -> resolves
+  #
+  # A library has to resolve on the OLDEST Flutter it claims to support, so the
+  # floor is what decides, not what is installed locally. `flutter pub
+  # outdated` on a 3.47 machine happily lists both as Upgradable; taking that
+  # at face value on 2026-08-30 produced a green local run and a red CI, which
+  # is exactly what the "Oldest allowed dependencies" job exists to catch.
+  #
+  # Raise these when this package's `flutter:` floor moves past the SDK that
+  # ships `meta ^1.18.3`.
   build_runner: ^2.15.1
   connectivity_plus_platform_interface: ^2.1.0
   flutter_lints: ^6.0.0
