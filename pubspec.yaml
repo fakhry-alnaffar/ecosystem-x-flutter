@@ -3,7 +3,7 @@ description: >-
   The X Flutter ecosystem in a single package — pure domain models, a Dio-based
   networking and storage layer, and a production-ready BLoC framework, behind
   one import.
-version: 2.0.0
+version: 2.1.0
 repository: https://github.com/fakhry-alnaffar/ecosystem-x-flutter
 homepage: https://github.com/fakhry-alnaffar/ecosystem-x-flutter
 issue_tracker: https://github.com/fakhry-alnaffar/ecosystem-x-flutter/issues
@@ -42,30 +42,25 @@ dependencies:
   pretty_dio_logger: ^1.4.0
   retry: ^3.1.2
   shared_preferences: ^2.5.5
-  # Capped below v11 ON PURPOSE — this is a data-safety bound, not an API one.
-  # The code here works fine on both majors (analyzed and tested against each).
+  # A RANGE over two majors, on purpose: this package works on both, and which
+  # one an app ships is the app's decision, not this library's.
   #
-  # v11 removes the Android ciphers *deprecated in v10*. It does not remove
-  # data: v10 migrates existing data to the new ciphers on first access
-  # whenever `migrateOnAlgorithmChange` is true, which is its default. So the
-  # exposure is narrower than "anyone on v11 loses their session", and worth
-  # stating precisely, because the earlier wording here was alarming enough to
-  # be misread: the app that gets hurt is one whose user updates from a
-  # PRE-v10 build straight to a v11 build, never running the migration. v11
-  # also raises minSdk to 24 and compileSdk to 37.
+  # Until 2.1.0 this was capped at ^10.3.1. v11 removes the Android ciphers
+  # deprecated in v10. It does not remove data on its own: v10 migrates
+  # existing data to the new ciphers on first access whenever
+  # `migrateOnAlgorithmChange` is true, which is its default. The one user it
+  # hurts is someone who updates from a PRE-v10 build straight to a v11 build,
+  # never running that migration -- their stored values stop decrypting. A
+  # library cannot know a consumer's install base, so it must not force that
+  # call; a range leaves it with the app, which pins the major it has checked.
   #
-  # The bound stays regardless. A library cannot know a consumer's install base
-  # or its Android build config, and it must not make that call silently on
-  # anyone's behalf — which is exactly what the pre-merge `^10.3.1` bound was
-  # protecting. Raising it is an app-level decision, taken after checking how
-  # many pre-v10 installs are still out there.
+  # The two other reasons the cap used to give are gone: v11.1.0 builds with
+  # Flutter's own compileSdk (36) instead of pinning 37, and win32 6 resolves
+  # in tyrhal since 2026-10-05. minSdk 24 still applies to apps that take v11.
   #
-  # Consumers are not currently waiting on this bound in any case: as of
-  # 2026-08-30, flutter_secure_storage 11 needs flutter_secure_storage_windows
-  # ^4.2.2, which needs win32 ^6.0.1, and tyrhal's dependency graph pins win32
-  # to 5.x through stream_chat_flutter. Widening here would unblock nothing and
-  # only spend the guard rail.
-  flutter_secure_storage: ^10.3.1
+  # The "Oldest allowed dependencies" CI job proves the v10 end; the package
+  # job proves v11.
+  flutter_secure_storage: ">=10.3.1 <12.0.0"
 
   # bloc layer — state management and UI plumbing.
   # x_flutter_bloc also declared equatable and flutter_screenutil, but nothing

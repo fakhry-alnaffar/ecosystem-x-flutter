@@ -1,5 +1,26 @@
 # Changelog
 
+## 2.1.0
+
+### Changed
+
+- `flutter_secure_storage` now accepts `>=10.3.1 <12.0.0` instead of `^10.3.1`.
+  The package works on both majors; CI proves v10 in the "Oldest allowed
+  dependencies" job and v11 (11.2.0) in the main one. Which major ships is the
+  app's decision: v11 drops the Android ciphers deprecated in v10, so a user
+  who updates from a pre-v10 build straight to a v11 build loses what was
+  stored. Apps that have shipped v10 for a while are already migrated. The
+  compileSdk 37 requirement mentioned under 2.0.0 is gone since v11.1.0, which
+  builds with Flutter's own compileSdk.
+- `SecuredPreferencesStorage` now sets `migrateWithBackup: true` on Android. It
+  defaults to false, and without it a migration that fails part-way falls
+  through to `resetOnError`, which erases the store.
+
+### Added
+
+- Tests for `SecuredPreferencesStorage`: every supported type round-trips,
+  defaults, unparsable values, `remove`, `contains` and `clear`.
+
 ## 2.0.0
 
 First release of the merged package. `x_flutter_core_models`, `x_flutter_core`

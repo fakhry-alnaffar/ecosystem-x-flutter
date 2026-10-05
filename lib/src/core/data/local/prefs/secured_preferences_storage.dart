@@ -6,12 +6,15 @@ import 'package:ecosystem_x_flutter/x_flutter_core.dart';
 /// Values are encrypted on disk using the platform keychain / keystore.
 /// Supports [String], [int], [double], and [bool] values; all types are
 /// serialised to their string representation before writing.
-class SecuredPreferencesStorage
-    extends KeyValueStorage<FlutterSecureStorage> {
-
+class SecuredPreferencesStorage extends KeyValueStorage<FlutterSecureStorage> {
+  /// `migrateWithBackup` defaults to false. Without it, an Android migration
+  /// that fails part-way falls through to `resetOnError`, which erases the
+  /// store: on a v10 plugin that is the move off the deprecated ciphers, on
+  /// v11 a switch of storage namespace. With it, the plugin keeps a backup and
+  /// recovers from it instead.
   @override
   Future<FlutterSecureStorage> create() async => const FlutterSecureStorage(
-    aOptions: AndroidOptions(),
+    aOptions: AndroidOptions(migrateWithBackup: true),
     iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
   );
 
